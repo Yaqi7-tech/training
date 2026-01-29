@@ -45,9 +45,25 @@ interface SupervisorEvaluation {
 }
 
 const getApiConfig = () => {
-  const visitorUrl = import.meta.env.VITE_DIFY_VISITOR_API_URL || 'https://api.dify.ai/v1';
+  // 新的网关地址映射
+  const oldToNewMapping: Record<string, string> = {
+    'https://dify.ai-role.cn/v1': 'https://gateway.lingxinai.com/dify-test/v1',
+    'http://dify.lingxinai.com/v1': 'https://gateway.lingxinai.com/dify-prod/v1',
+  };
+
+  // 获取配置的 URL，如果没有则使用默认的测试环境
+  let visitorUrl = import.meta.env.VITE_DIFY_VISITOR_API_URL || 'https://gateway.lingxinai.com/dify-test/v1';
+  let supervisorUrl = import.meta.env.VITE_DIFY_SUPERVISOR_API_URL || 'https://gateway.lingxinai.com/dify-test/v1';
+
+  // 如果配置的是旧地址，自动转换为新地址
+  if (oldToNewMapping[visitorUrl]) {
+    visitorUrl = oldToNewMapping[visitorUrl];
+  }
+  if (oldToNewMapping[supervisorUrl]) {
+    supervisorUrl = oldToNewMapping[supervisorUrl];
+  }
+
   const visitorKey = import.meta.env.VITE_DIFY_VISITOR_API_KEY || 'app-2HjDhAbbHNl8N4T2Rcs2C25s';
-  const supervisorUrl = import.meta.env.VITE_DIFY_SUPERVISOR_API_URL || 'https://api.dify.ai/v1';
   const supervisorKey = import.meta.env.VITE_DIFY_SUPERVISOR_API_KEY || 'app-3NPjpb7nkYhFAYtXpFvOShv6';
 
   return {
@@ -75,14 +91,20 @@ export class DifyApiService {
       user: 'counselor_user'
     };
 
-    const response = await fetch(`${config.url}/chat-messages`, {
+    // 使用本地代理 API 来解决 CORS 问题
+    const isProduction = import.meta.env.MODE === 'production';
+    const apiUrl = isProduction ? '/api/dify' : '/api/dify';
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.key}`,
-        'Accept': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        apiUrl: config.url,
+        apiKey: config.key,
+        payload: requestBody
+      })
     });
 
     if (!response.ok) {
