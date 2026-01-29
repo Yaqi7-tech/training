@@ -266,6 +266,39 @@ export class DifyApiService {
     try {
       let cleanAnswer = response.answer.trim();
 
+      // 尝试解析新的全JSON格式：{ "result": { "reply": "```json\n{...}\n```" } }
+      try {
+        const outerJson = JSON.parse(cleanAnswer);
+        if (outerJson.result && outerJson.result.reply) {
+          let replyContent = outerJson.result.reply;
+
+          // 从markdown代码块中提取JSON
+          const jsonBlockMatch = replyContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+          if (jsonBlockMatch) {
+            replyContent = jsonBlockMatch[1];
+          }
+
+          // 解析内部的JSON
+          const innerJson = JSON.parse(replyContent);
+          if (innerJson.综合得分 !== undefined || innerJson.总体评价 || innerJson.建议 || innerJson.跳步判断) {
+            // 确保所有字段都存在
+            if (!innerJson.综合得分) innerJson.综合得分 = 3;
+            if (!innerJson.总体评价) innerJson.总体评价 = '暂无评价';
+            if (!innerJson.建议) innerJson.建议 = '请继续关注来访者的需求和感受。';
+            if (!innerJson.跳步判断) innerJson.跳步判断 = {
+              是否跳步: false,
+              跳步类型: "无",
+              督导建议: "无跳步问题"
+            };
+
+            return innerJson as SupervisorEvaluation;
+          }
+        }
+      } catch (e) {
+        console.log('不是新的全JSON格式，尝试其他解析方式');
+      }
+
+      // 原有的解析逻辑（向后兼容）
       const hasJsonStructure =
         (cleanAnswer.includes('{') && cleanAnswer.includes('}')) ||
         (cleanAnswer.includes('"综合得分"') && cleanAnswer.includes('"总体评价"')) ||

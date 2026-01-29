@@ -270,7 +270,7 @@ export function ChatInterface({ scenario, onBack }: ChatInterfaceProps) {
                   <div className="flex-1 items-start flex flex-col">
                     <div className="px-4 py-3 rounded-2xl bg-slate-100">
                       <span className="text-sm text-slate-500">来访者正在输入</span>
-                      <span className="typing-dots">
+                      <span className="typing-dots ml-1">
                         <span className="dot">.</span>
                         <span className="dot">.</span>
                         <span className="dot">.</span>
