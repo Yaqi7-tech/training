@@ -182,19 +182,42 @@ export class DifyApiService {
         if (firstJson.reply) {
           if (typeof firstJson.reply === 'string' && firstJson.reply.includes('{')) {
             try {
-              const unescapedReply = firstJson.reply
+              // 先处理转义字符
+              let processedReply = firstJson.reply
                 .replace(/\\n/g, '\n')
                 .replace(/\\"/g, '"');
-              const replyJson = JSON.parse(unescapedReply) as NewApiResponse;
-              if (replyJson.reply) {
-                visitorText = replyJson.reply;
-              }
-              if (replyJson.open_stage) {
-                const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
-                if (levelMatch) {
-                  const levelValue = parseInt(levelMatch[1], 10);
-                  if (levelValue >= 1 && levelValue <= 4) {
-                    opennessLevel = levelValue;
+
+              // 尝试提取 markdown 代码块中的 JSON
+              const jsonBlockMatch = processedReply.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+              if (jsonBlockMatch) {
+                // 从代码块中提取纯 JSON（去掉 markdown 标记）
+                const jsonContent = jsonBlockMatch[1].trim();
+                const replyJson = JSON.parse(jsonContent) as NewApiResponse;
+                if (replyJson.reply) {
+                  visitorText = replyJson.reply;
+                }
+                if (replyJson.open_stage) {
+                  const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
+                  if (levelMatch) {
+                    const levelValue = parseInt(levelMatch[1], 10);
+                    if (levelValue >= 1 && levelValue <= 4) {
+                      opennessLevel = levelValue;
+                    }
+                  }
+                }
+              } else {
+                // 没有代码块，尝试直接解析
+                const replyJson = JSON.parse(processedReply) as NewApiResponse;
+                if (replyJson.reply) {
+                  visitorText = replyJson.reply;
+                }
+                if (replyJson.open_stage) {
+                  const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
+                  if (levelMatch) {
+                    const levelValue = parseInt(levelMatch[1], 10);
+                    if (levelValue >= 1 && levelValue <= 4) {
+                      opennessLevel = levelValue;
+                    }
                   }
                 }
               }
