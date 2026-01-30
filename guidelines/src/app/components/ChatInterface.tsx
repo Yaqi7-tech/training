@@ -360,47 +360,50 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
             </div>
           </div>
 
-          {/* Input Area */}
-          <div className="border-t border-slate-200 bg-white">
-            <div className="px-8 py-6">
-              <div className="max-w-3xl mx-auto">
-                <div className="flex gap-3 items-end">
-                  <div className="flex-1 relative">
-                    <Textarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="输入您的回复... (Shift+Enter 换行)"
-                      className="min-h-[60px] max-h-[200px] resize-none pr-4 text-sm"
-                    />
+          {/* Input Area - only show after starting */}
+          {hasStarted && (
+            <div className="border-t border-slate-200 bg-white">
+              <div className="px-8 py-6">
+                <div className="max-w-3xl mx-auto">
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1 relative">
+                      <Textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="输入您的回复... (Shift+Enter 换行)"
+                        className="min-h-[60px] max-h-[200px] resize-none pr-4 text-sm"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleSend}
+                      disabled={!input.trim()}
+                      className="h-[60px] px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      发送
+                    </Button>
                   </div>
+                  <p className="text-xs text-slate-400 mt-2">
+                    按 Enter 发送消息，Shift+Enter 换行
+                  </p>
+                </div>
+              </div>
+
+              {/* End Practice Button */}
+              <div className="px-8 pb-6">
+                <div className="max-w-3xl mx-auto">
                   <Button
-                    onClick={handleSend}
-                    disabled={!input.trim()}
-                    className="h-[60px] px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300"
+                    onClick={onFinish}
+                    variant="outline"
+                    className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    发送
+                    结束练习
                   </Button>
                 </div>
-                <p className="text-xs text-slate-400 mt-2">
-                  按 Enter 发送消息，Shift+Enter 换行
-                </p>
               </div>
             </div>
-
-            {/* End Practice Button */}
-            <div className="px-8 pb-6">
-              <div className="max-w-3xl mx-auto">
-                <Button
-                  onClick={onFinish}
-                  variant="outline"
-                  className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                >
-                  结束练习
-                </Button>
-              </div>
-            </div>
+          )}
           </div>
         </div>
 
