@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Area, AreaChart, Tooltip } from 'recharts';
 import { Activity, Brain, Gauge, TrendingUp } from 'lucide-react';
 import type { ChartData } from '@/app/services/api';
 
@@ -114,7 +114,7 @@ export function VisitorStatus({ chartData }: VisitorStatusProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4" style={{ color: '#4198AC' }} />
-            <h3 className="font-medium text-slate-900">对话阶段 (Timeline)</h3>
+            <h3 className="font-medium text-slate-900">对话阶段</h3>
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <ResponsiveContainer width="100%" height={120}>
@@ -138,6 +138,7 @@ export function VisitorStatus({ chartData }: VisitorStatusProps) {
                   axisLine={{ stroke: '#cbd5e1' }}
                   label={{ value: '阶段', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#64748b' } }}
                 />
+                <Tooltip />
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -155,7 +156,7 @@ export function VisitorStatus({ chartData }: VisitorStatusProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4" style={{ color: '#51999F' }} />
-            <h3 className="font-medium text-slate-900">情绪流变 (Timeline)</h3>
+            <h3 className="font-medium text-slate-900">情绪流变</h3>
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             {/* Legend */}
@@ -211,17 +212,18 @@ export function VisitorStatus({ chartData }: VisitorStatusProps) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="turn" 
+                <XAxis
+                  dataKey="turn"
                   tick={{ fontSize: 11, fill: '#64748b' }}
                   axisLine={{ stroke: '#cbd5e1' }}
                 />
-                <YAxis 
-                  domain={[0, 1]} 
+                <YAxis
+                  domain={[0, 1]}
                   tick={{ fontSize: 11, fill: '#64748b' }}
                   axisLine={{ stroke: '#cbd5e1' }}
                   label={{ value: '压力值', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#64748b' } }}
                 />
+                <Tooltip />
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -251,17 +253,18 @@ export function VisitorStatus({ chartData }: VisitorStatusProps) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  dataKey="turn" 
+                <XAxis
+                  dataKey="turn"
                   tick={{ fontSize: 11, fill: '#64748b' }}
                   axisLine={{ stroke: '#cbd5e1' }}
                 />
-                <YAxis 
-                  domain={[-1, 1]} 
+                <YAxis
+                  domain={[-1, 1]}
                   tick={{ fontSize: 11, fill: '#64748b' }}
                   axisLine={{ stroke: '#cbd5e1' }}
                   label={{ value: '情绪度', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#64748b' } }}
                 />
+                <Tooltip />
                 <Area
                   type="monotone"
                   dataKey="value"

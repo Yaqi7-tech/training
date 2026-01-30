@@ -259,9 +259,10 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                       message.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                        ? ''
                         : 'bg-gradient-to-br from-slate-200 to-slate-300'
                     }`}
+                    style={message.role === 'user' ? { backgroundColor: '#4198AC' } : {}}
                   >
                     {message.role === 'user' ? (
                       <User className="w-5 h-5 text-white" />
