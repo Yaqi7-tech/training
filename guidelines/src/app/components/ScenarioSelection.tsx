@@ -9,14 +9,6 @@ interface Scenario {
   goal: string;
   color: string;
   icon: React.ReactNode;
-  // 来访者档案信息
-  visitorProfile?: {
-    name: string;
-    age: string;
-    problem: string;
-    defense: string;
-    trainingGoal: string;
-  };
 }
 
 const scenarios: Scenario[] = [
