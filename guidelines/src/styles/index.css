@@ -2,41 +2,41 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* Typing indicator animation - pulse effect */
-.typing-dots {
+/* Typing indicator animation - wave effect */
+.typing-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-left: 4px;
+  gap: 3px;
+  margin-left: 6px;
 }
 
-.typing-dots .dot {
-  width: 6px;
-  height: 6px;
+.typing-indicator .typing-dot {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background-color: #64748b;
-  animation: typing-pulse 1.2s infinite ease-in-out;
+  animation: typing-wave 1.4s infinite ease-in-out;
 }
 
-.typing-dots .dot:nth-child(1) {
+.typing-indicator .typing-dot:first-child {
   animation-delay: 0s;
 }
 
-.typing-dots .dot:nth-child(2) {
-  animation-delay: 0.3s;
+.typing-indicator .typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
-.typing-dots .dot:nth-child(3) {
-  animation-delay: 0.6s;
+.typing-indicator .typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
-@keyframes typing-pulse {
+@keyframes typing-wave {
   0%, 100% {
-    transform: scale(0.8);
     opacity: 0.3;
+    transform: translateY(0);
   }
   50% {
-    transform: scale(1.2);
     opacity: 1;
+    transform: translateY(-3px);
   }
 }
