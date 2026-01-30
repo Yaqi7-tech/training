@@ -2,7 +2,7 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* Typing indicator animation - fade in/out effect */
+/* Typing indicator animation - pulse effect */
 .typing-dots {
   display: inline-flex;
   align-items: center;
@@ -11,11 +11,11 @@
 }
 
 .typing-dots .dot {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: #64748b;
-  animation: typing-fade 1.4s infinite ease-in-out;
+  animation: typing-pulse 1.2s infinite ease-in-out;
 }
 
 .typing-dots .dot:nth-child(1) {
@@ -23,18 +23,20 @@
 }
 
 .typing-dots .dot:nth-child(2) {
-  animation-delay: 0.2s;
+  animation-delay: 0.3s;
 }
 
 .typing-dots .dot:nth-child(3) {
-  animation-delay: 0.4s;
+  animation-delay: 0.6s;
 }
 
-@keyframes typing-fade {
+@keyframes typing-pulse {
   0%, 100% {
-    opacity: 0.2;
+    transform: scale(0.8);
+    opacity: 0.3;
   }
   50% {
+    transform: scale(1.2);
     opacity: 1;
   }
 }
