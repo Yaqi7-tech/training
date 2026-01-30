@@ -22,6 +22,77 @@ interface ChatInterfaceProps {
   onFinish: () => void;
 }
 
+function OpeningScreen({ scenario, onStart }: { scenario: Scenario; onStart: () => void }) {
+  return (
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="max-w-3xl w-full">
+          <div className="bg-white rounded-3xl shadow-xl p-10 space-y-8">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                <span className="text-3xl">👨‍🏫</span>
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                您好！我是您的专属心理咨询培训督导。
+              </h1>
+              <p className="text-slate-600 leading-relaxed">
+                在接下来的模拟咨询中，我将全程在后台陪伴您，实时监控咨访关系，并在必要时给予策略建议。
+              </p>
+            </div>
+
+            {scenario.visitorProfile && (
+              <div className="space-y-6 border-t border-slate-100 pt-8">
+                <div className="bg-slate-50 rounded-xl p-6 space-y-4">
+                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <span>📋</span> 今日来访者档案
+                  </h2>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex">
+                      <span className="text-slate-500 w-24 flex-shrink-0">姓名</span>
+                      <span className="text-slate-900 font-medium">{scenario.visitorProfile.name}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="text-slate-500 w-24 flex-shrink-0">年龄</span>
+                      <span className="text-slate-900">{scenario.visitorProfile.age}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="text-slate-500 w-24 flex-shrink-0">主诉问题</span>
+                      <span className="text-slate-900">{scenario.visitorProfile.problem}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="text-slate-500 w-24 flex-shrink-0">防御特征</span>
+                      <span className="text-slate-900">{scenario.visitorProfile.defense}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 rounded-xl p-6">
+                  <h2 className="text-lg font-semibold text-amber-900 flex items-center gap-2 mb-3">
+                    <span>🎯</span> 本局训练目标
+                  </h2>
+                  <p className="text-sm text-amber-800 leading-relaxed">
+                    {scenario.visitorProfile.trainingGoal}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center pt-4">
+              <p className="text-slate-500 mb-6">准备好了吗？请点击下方按钮开启训练！👇</p>
+              <Button
+                onClick={onStart}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-6 text-lg h-auto"
+              >
+                开始新的对话练习
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -123,6 +194,10 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
       handleSend();
     }
   };
+
+  if (!hasStarted) {
+    return <OpeningScreen scenario={scenario} onStart={handleReset} />;
+  }
 
   return (
     <div className="h-screen flex flex-col bg-slate-50">

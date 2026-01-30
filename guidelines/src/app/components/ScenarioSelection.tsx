@@ -1,6 +1,14 @@
 import { MessageSquare, User, Heart, Users, HelpCircle, Baby, Brain, Sparkles, Zap, AlertCircle, Clock, TrendingUp } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 
+interface VisitorProfile {
+  name: string;
+  age: string;
+  problem: string;
+  defense: string;
+  trainingGoal: string;
+}
+
 interface Scenario {
   id: number;
   title: string;
@@ -9,6 +17,7 @@ interface Scenario {
   goal: string;
   color: string;
   icon: React.ReactNode;
+  visitorProfile?: VisitorProfile;
 }
 
 const scenarios: Scenario[] = [
