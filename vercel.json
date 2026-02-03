@@ -1,8 +1,10 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npx vite build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
+  "framework": null,
+  "ignoreCommand": "echo 'No ignore command'",
   "env": {
-    "NEXT_PRIVATE_SKIP_TYPECHECK": "1"
+    "NODE_VERSION": "20"
   }
 }
