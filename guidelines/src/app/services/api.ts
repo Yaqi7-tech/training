@@ -415,10 +415,12 @@ export class DifyApiService {
       }
 
       if (evaluationData) {
+        console.log('处理前的督导数据:', JSON.stringify(evaluationData, null, 2));
+
         // 确保所有字段都存在
         if (evaluationData.综合得分 === undefined) evaluationData.综合得分 = 3;
-        if (!evaluationData.总体评价) evaluationData.总体评价 = '暂无评价';
-        if (!evaluationData.建议) evaluationData.建议 = '请继续关注来访者的需求和感受。';
+        if (evaluationData.总体评价 === undefined || evaluationData.总体评价 === '') evaluationData.总体评价 = '暂无评价';
+        if (evaluationData.建议 === undefined || evaluationData.建议 === '') evaluationData.建议 = '请继续关注来访者的需求和感受。';
         if (!evaluationData.跳步判断) evaluationData.跳步判断 = {
           是否跳步: false,
           跳步类型: "无",
@@ -426,6 +428,7 @@ export class DifyApiService {
         };
 
         console.log('最终督导数据:', evaluationData);
+        console.log('最终督导数据( stringify):', JSON.stringify(evaluationData, null, 2));
         return evaluationData;
       } else {
         throw new Error('无法解析督导数据格式');

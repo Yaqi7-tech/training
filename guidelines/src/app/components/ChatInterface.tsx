@@ -164,7 +164,10 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
 
       const supervisorResponse = await difyApiService.callSupervisorAgent(input, conversationHistory, chartData);
       const currentTurn = Math.floor((messages.length + 1) / 2);
+      console.log('即将添加到state的督导数据:', supervisorResponse);
+      console.log('督导数据( stringify):', JSON.stringify(supervisorResponse, null, 2));
       setSupervisorEvaluations(prev => [...prev, { ...supervisorResponse, turn: currentTurn }]);
+      console.log('添加后的evaluations数量:', currentTurn);
 
       const visitorResponse = await difyApiService.callVisitorAgent(input);
 
