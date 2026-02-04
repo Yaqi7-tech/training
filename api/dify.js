@@ -23,7 +23,12 @@ export default async function handler(req, res) {
     // 构建目标 URL
     const targetUrl = `${apiUrl}/chat-messages`;
 
+    const payloadSize = JSON.stringify(payload).length;
     console.log('转发请求到:', targetUrl);
+    console.log('请求体大小:', payloadSize, 'bytes');
+    console.log('查询内容长度:', payload.query?.length || 0, 'chars');
+
+    const startTime = Date.now();
 
     // 转发请求到后端 API
     const response = await fetch(targetUrl, {
@@ -36,7 +41,8 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload),
     });
 
-    console.log('API响应状态:', response.status);
+    const duration = Date.now() - startTime;
+    console.log('API响应状态:', response.status, '耗时:', duration, 'ms');
 
     if (!response.ok) {
       const errorText = await response.text();
