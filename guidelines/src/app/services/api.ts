@@ -587,19 +587,27 @@ export class DifyApiService {
           competencyScores: competencyScores
         };
       } else {
+        console.error('无法解析督导数据格式');
+        console.error('原始响应长度:', answer.length);
+        console.error('原始响应前500字符:', answer.substring(0, 500));
         throw new Error('无法解析督导数据格式');
       }
     } catch (error) {
       console.error('督导解析错误:', error);
+      console.error('错误类型:', error.constructor.name);
+      console.error('错误消息:', error.message);
+      console.error('原始响应:', response.answer?.substring(0, 500));
+
+      // 返回默认值，让对话可以继续
       return {
         evaluation: {
           综合得分: 3,
-          总体评价: response.answer,
+          总体评价: response.answer || '督导响应解析失败',
           建议: "请继续关注来访者的需求和感受。",
           跳步判断: {
             是否跳步: false,
             跳步类型: "解析错误",
-            督导建议: "评价格式解析出现问题，请检查API响应"
+            督导建议: "评价格式解析出现问题"
           }
         },
         competencyScores: {}
