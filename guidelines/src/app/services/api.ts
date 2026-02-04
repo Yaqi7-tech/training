@@ -236,6 +236,40 @@ export class DifyApiService {
     return null;
   }
 
+  // 从 markdown 代码块中提取 JSON
+  private extractJsonFromMarkdown(text: string): string | null {
+    // 匹配 ```json 或 ``` 后跟 JSON 内容
+    const codeBlockRegex = /```(?:json)?\s*\n?([\s\S]*?)\n?```/;
+    const match = text.match(codeBlockRegex);
+
+    if (match && match[1]) {
+      const content = match[1].trim();
+      // 从内容中提取 JSON 对象
+      return this.extractFirstJson(content);
+    }
+
+    // 如果没有代码块，尝试直接提取
+    return this.extractFirstJson(text);
+  }
+
+  // 从文本中提取胜任力维度（例如 "Professionalism：6.0"）
+  private extractCompetencyScores(text: string): CompetencyScores {
+    const scores: CompetencyScores = {};
+    const fields = ['Professionalism', 'Relational', 'Science', 'Application', 'Education', 'Systems'];
+
+    fields.forEach(field => {
+      // 匹配 "字段名：数字" 或 "字段名:数字"
+      const regex = new RegExp(`${field}[:：]\\s*(\\d+(?:\\.\\d+)?)`, 'i');
+      const match = text.match(regex);
+      if (match && match[1]) {
+        scores[field as keyof CompetencyScores] = parseFloat(match[1]);
+        console.log(`提取胜任力维度 ${field}:`, match[1]);
+      }
+    });
+
+    return scores;
+  }
+
   async callVisitorAgent(message: string): Promise<VisitorResponse> {
     const response = await this.callDifyAPI(API_CONFIG.visitor, message, this.visitorConversationId);
 
@@ -381,78 +415,38 @@ export class DifyApiService {
     }
 
     try {
-      let cleanAnswer = response.answer.trim();
-      console.log('督导原始响应:', cleanAnswer);
-
-      // 尝试解析外层 JSON
-      let outerJson: any = null;
-      try {
-        outerJson = JSON.parse(cleanAnswer);
-      } catch (e) {
-        console.log('无法解析外层JSON，尝试从文本提取');
-      }
+      const answer = response.answer.trim();
+      console.log('督导原始响应:', answer);
 
       // 解析结果
       let fullRecord: FullSupervisorRecord | null = null;
       let evaluationData: SupervisorEvaluation | null = null;
       let competencyScores: CompetencyScores = {};
 
-      // 从外层JSON中提取数据
-      if (outerJson) {
-        // 1. 提取胜任力维度（外层顶层字段）
+      // 首先尝试解析为 JSON（兼容旧格式）
+      try {
+        const outerJson = JSON.parse(answer);
+
+        // 从JSON中提取胜任力维度
         const competencyFields = ['Professionalism', 'Relational', 'Science', 'Application', 'Education', 'Systems'];
         competencyFields.forEach(field => {
           if (outerJson[field] !== undefined) {
             competencyScores[field as keyof CompetencyScores] = outerJson[field];
-            console.log(`提取胜任力维度 ${field}:`, outerJson[field]);
           }
         });
 
-        // 2. 从 "本轮评价" 的 reply 字段提取本轮督导数据
+        // 从本轮评价提取
         if (outerJson['本轮评价']) {
           const currentTurnData = outerJson['本轮评价'];
           if (currentTurnData.reply) {
-            const extractedJson = this.extractFirstJson(currentTurnData.reply);
+            const extractedJson = this.extractJsonFromMarkdown(currentTurnData.reply);
             if (extractedJson) {
-              try {
-                const parsed = JSON.parse(extractedJson);
-                if (parsed.structured_output) {
-                  evaluationData = {
-                    ...parsed.structured_output,
-                    natural_language_feedback: parsed.natural_language_feedback
-                  } as SupervisorEvaluation;
-                  console.log('从本轮评价提取到督导数据:', evaluationData);
-
-                  // 如果有轮次信息，保存完整督导记录
-                  if (parsed.轮次 !== undefined) {
-                    fullRecord = {
-                      轮次: parsed.轮次,
-                      natural_language_feedback: parsed.natural_language_feedback,
-                      structured_output: parsed.structured_output
-                    };
-                    this.fullSupervisorRecords.push(fullRecord);
-                    console.log('保存完整督导记录, 轮次:', parsed.轮次);
-                  }
-                }
-              } catch (e) {
-                console.log('解析本轮评价失败:', e);
-              }
-            }
-          }
-        }
-
-        // 如果没有找到本轮评价，尝试直接从 reply 字段提取（兼容旧格式）
-        if (!evaluationData && outerJson.reply) {
-          const extractedJson = this.extractFirstJson(outerJson.reply);
-          if (extractedJson) {
-            try {
               const parsed = JSON.parse(extractedJson);
               if (parsed.structured_output) {
                 evaluationData = {
                   ...parsed.structured_output,
                   natural_language_feedback: parsed.natural_language_feedback
                 } as SupervisorEvaluation;
-                console.log('从 reply 提取到督导数据:', evaluationData);
 
                 if (parsed.轮次 !== undefined) {
                   fullRecord = {
@@ -461,6 +455,103 @@ export class DifyApiService {
                     structured_output: parsed.structured_output
                   };
                   this.fullSupervisorRecords.push(fullRecord);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('不是JSON格式，尝试从文本解析');
+      }
+
+      // 如果JSON解析失败或没有找到数据，从文本格式解析
+      if (!evaluationData) {
+        // 1. 提取胜任力维度（从文本末尾）
+        competencyScores = this.extractCompetencyScores(answer);
+
+        // 2. 提取"完整督导记录"部分
+        const fullRecordMatch = answer.match(/完整督导记录\s*```json\s*([\s\S]*?)\n```/);
+        if (fullRecordMatch) {
+          try {
+            const fullRecordJson = this.extractFirstJson(fullRecordMatch[1]);
+            if (fullRecordJson) {
+              const parsed = JSON.parse(fullRecordJson);
+              if (parsed.轮次 && parsed.structured_output) {
+                fullRecord = {
+                  轮次: parsed.轮次,
+                  natural_language_feedback: parsed.natural_language_feedback,
+                  structured_output: parsed.structured_output
+                };
+                this.fullSupervisorRecords.push(fullRecord);
+                console.log('从文本提取完整督导记录, 轮次:', parsed.轮次);
+              }
+            }
+          } catch (e) {
+            console.log('解析完整督导记录失败:', e);
+          }
+        }
+
+        // 3. 提取"本轮评价"部分
+        const currentTurnMatch = answer.match(/本轮评价\s*([\s\S]*?)(?=\n\s*(?:Professionalism|Relational)|$)/);
+        if (currentTurnMatch) {
+          const currentTurnText = currentTurnMatch[1].trim();
+          const extractedJson = this.extractJsonFromMarkdown(currentTurnText);
+          if (extractedJson) {
+            try {
+              const parsed = JSON.parse(extractedJson);
+              if (parsed.structured_output) {
+                evaluationData = {
+                  ...parsed.structured_output,
+                  natural_language_feedback: parsed.natural_language_feedback
+                } as SupervisorEvaluation;
+                console.log('从本轮评价提取到督导数据:', evaluationData);
+              }
+            } catch (e) {
+              console.log('解析本轮评价失败:', e);
+            }
+          }
+        }
+      }
+
+      if (evaluationData) {
+        // 确保所有字段都存在
+        if (evaluationData.综合得分 === undefined) evaluationData.综合得分 = 3;
+        if (evaluationData.总体评价 === undefined || evaluationData.总体评价 === '') evaluationData.总体评价 = '暂无评价';
+        if (evaluationData.建议 === undefined || evaluationData.建议 === '') evaluationData.建议 = '请继续关注来访者的需求和感受。';
+        if (!evaluationData.跳步判断) evaluationData.跳步判断 = {
+          是否跳步: false,
+          跳步类型: "无",
+          督导建议: "无跳步问题"
+        };
+
+        console.log('最终督导评价:', evaluationData);
+        console.log('胜任力维度:', competencyScores);
+
+        return {
+          fullRecord: fullRecord || undefined,
+          evaluation: evaluationData,
+          competencyScores: competencyScores
+        };
+      } else {
+        throw new Error('无法解析督导数据格式');
+      }
+    } catch (error) {
+      console.error('督导解析错误:', error);
+      return {
+        evaluation: {
+          综合得分: 3,
+          总体评价: response.answer,
+          建议: "请继续关注来访者的需求和感受。",
+          跳步判断: {
+            是否跳步: false,
+            跳步类型: "解析错误",
+            督导建议: "评价格式解析出现问题，请检查API响应"
+          }
+        },
+        competencyScores: {}
+      };
+    }
+  }
                   console.log('保存完整督导记录, 轮次:', parsed.轮次);
                 }
               }
