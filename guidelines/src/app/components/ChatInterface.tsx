@@ -162,13 +162,17 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
         content: m.content
       }));
 
-      const supervisorResponse = await difyApiService.callSupervisorAgent(input, conversationHistory, chartData);
-      const currentTurn = Math.floor((messages.length + 1) / 2);
-      console.log('即将添加到state的督导数据:', supervisorResponse);
-      console.log('督导数据( stringify):', JSON.stringify(supervisorResponse, null, 2));
-      setSupervisorEvaluations(prev => [...prev, { ...supervisorResponse, turn: currentTurn }]);
-      console.log('添加后的evaluations数量:', currentTurn);
+      // 先调用督导API，如果失败则继续调用来访者API
+      try {
+        const supervisorResponse = await difyApiService.callSupervisorAgent(input, conversationHistory, chartData);
+        const currentTurn = Math.floor((messages.length + 1) / 2);
+        console.log('督导数据收到:', supervisorResponse);
+        setSupervisorEvaluations(prev => [...prev, { ...supervisorResponse, turn: currentTurn }]);
+      } catch (supervisorError) {
+        console.error('督导API调用失败，但不影响来访者API:', supervisorError);
+      }
 
+      // 再调用来访者API
       const visitorResponse = await difyApiService.callVisitorAgent(input);
 
       const aiResponse: Message = {
@@ -186,6 +190,8 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      // 显示错误提示给用户
+      alert('消息发送失败，请重试');
     } finally {
       setIsLoading(false);
     }

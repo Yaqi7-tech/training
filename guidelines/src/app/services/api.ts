@@ -89,7 +89,8 @@ export class DifyApiService {
   private async callDifyAPI(
     config: { url: string; key: string },
     message: string,
-    conversationId: string | null = null
+    conversationId: string | null = null,
+    retries = 2
   ): Promise<DifyResponse> {
     const requestBody: ChatMessage = {
       inputs: {},
@@ -103,24 +104,46 @@ export class DifyApiService {
     const isProduction = import.meta.env.MODE === 'production';
     const apiUrl = isProduction ? '/api/dify' : '/api/dify';
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        apiUrl: config.url,
-        apiKey: config.key,
-        payload: requestBody
-      })
-    });
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000); // 25秒超时
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API请求失败: ${response.status} ${errorText}`);
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            apiUrl: config.url,
+            apiKey: config.key,
+            payload: requestBody
+          })
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API请求失败: ${response.status} ${errorText}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.warn(`API调用失败 (尝试 ${attempt + 1}/${retries + 1}):`, error);
+
+        // 最后一次尝试失败，抛出错误
+        if (attempt === retries) {
+          throw new Error(`API调用失败: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+
+        // 等待一下再重试
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
     }
 
-    return await response.json();
+    throw new Error('Unexpected error');
   }
 
   private extractJsonObjectFromText(text: string): string | null {
