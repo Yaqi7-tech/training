@@ -38,13 +38,11 @@ const colors = {
   dark: '#4198AC',
   light: '#E8F4F6',
   bg: '#F8FAFC',
-  success: '#10B981',
-  warning: '#F59E0B',
-  // 关键帧诊断配色 - 使用更鲜艳的颜色
-  bestBorder: '#059669', // 深绿色
-  bestBg: '#D1FAE5',     // 浅绿色背景
-  worstBorder: '#DC2626', // 深红色
-  worstBg: '#FEE2E2'      // 浅红色背景
+  // 关键帧诊断配色 - 使用青蓝色系
+  bestBorder: '#4198AC',    // 深蓝色
+  bestBg: '#BFDFD2',        // 浅青色
+  worstBorder: '#ECB66C',   // 橙黄色
+  worstBg: '#FEF3C7'        // 浅黄色背景
 };
 
 const competencyDimensions = [
@@ -133,25 +131,76 @@ function KeyMomentsAnalysis({ sessionTurnRecords }: { sessionTurnRecords: Sessio
   const bestMoment = sortedByScore[0];
   const worstMoment = sortedByScore[sortedByScore.length - 1];
 
-  // 提取表扬部分（简单逻辑：取前半部分作为表扬）
+  // 提取表扬部分 - 改进版
   const extractPraise = (feedback: string) => {
     if (!feedback) return '表现良好';
-    // 尝试找到"建议"等关键词，之前的内容作为表扬
-    const suggestIndex = feedback.indexOf('建议');
-    if (suggestIndex > 0) {
-      return feedback.substring(0, suggestIndex).trim();
+    // 清理反馈中的换行符和多余空格
+    const cleanFeedback = feedback.replace(/\n+/g, ' ').trim();
+
+    // 尝试找到分割点：关键词 "建议"、"改进"
+    const splitPatterns = ['建议', '改进', '提升', '督导建议'];
+    let splitIndex = -1;
+
+    for (const pattern of splitPatterns) {
+      const index = cleanFeedback.indexOf(pattern);
+      if (index > 0) {
+        splitIndex = index;
+        break;
+      }
     }
-    return feedback.substring(0, Math.min(100, feedback.length));
+
+    if (splitIndex > 0) {
+      return cleanFeedback.substring(0, splitIndex).trim();
+    }
+
+    // 如果找不到明确的分割点，返回前70%作为表扬
+    if (cleanFeedback.length > 100) {
+      return cleanFeedback.substring(0, Math.floor(cleanFeedback.length * 0.7)).trim() + '...';
+    }
+    return cleanFeedback;
   };
 
-  // 提取建议部分
+  // 提取建议部分 - 改进版，确保完整提取
   const extractSuggestion = (feedback: string) => {
     if (!feedback) return '继续努力';
-    const suggestIndex = feedback.indexOf('建议');
-    if (suggestIndex > 0) {
-      return feedback.substring(suggestIndex).trim();
+    // 保留原始格式，只清理首尾空格
+    const cleanFeedback = feedback.trim();
+
+    // 尝试找到"建议"等关键词及其后面的完整内容
+    const suggestionPatterns = [
+      /建议[：:]\s*([\s\S]+)/,  // 匹配到结尾
+      /督导建议[：:]\s*([\s\S]+)/,
+      /改进建议[：:]\s*([\s\S]+)/
+    ];
+
+    for (const pattern of suggestionPatterns) {
+      const match = cleanFeedback.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();  // 返回完整内容，不截断
+      }
     }
-    return feedback.substring(Math.min(100, feedback.length));
+
+    // 如果找不到明确的格式，尝试简单查找
+    const keywordIndex = cleanFeedback.search(/建议|改进|提升/);
+    if (keywordIndex >= 0) {
+      // 找到关键词的位置，向前查找是否有冒号
+      const fromStart = cleanFeedback.substring(keywordIndex - 2, keywordIndex);
+      if (fromStart.includes('：') || fromStart.includes(':')) {
+        // 有冒号，从冒号后开始
+        const colonIndex = Math.max(
+          cleanFeedback.lastIndexOf('：', keywordIndex),
+          cleanFeedback.lastIndexOf(':', keywordIndex)
+        );
+        if (colonIndex >= 0) {
+          return cleanFeedback.substring(colonIndex + 1).trim();
+        }
+      }
+      // 没有冒号，直接从关键词开始
+      return cleanFeedback.substring(keywordIndex).trim();
+    }
+
+    // 如果还是找不到，返回完整的原始反馈
+    return cleanFeedback;
   };
 
   return (
