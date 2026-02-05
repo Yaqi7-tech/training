@@ -40,11 +40,11 @@ const colors = {
   bg: '#F8FAFC',
   success: '#10B981',
   warning: '#F59E0B',
-  // 关键帧诊断配色
-  bestBorder: '#51999F',
-  bestBg: '#BFDFD2',
-  worstBorder: '#ED8D5A',
-  worstBg: '#EA9E58'
+  // 关键帧诊断配色 - 使用更鲜艳的颜色
+  bestBorder: '#059669', // 深绿色
+  bestBg: '#D1FAE5',     // 浅绿色背景
+  worstBorder: '#DC2626', // 深红色
+  worstBg: '#FEE2E2'      // 浅红色背景
 };
 
 const competencyDimensions = [
