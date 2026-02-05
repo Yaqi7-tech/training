@@ -144,8 +144,10 @@ export class DifyApiService {
     message: string,
     conversationId: string | null = null,
     retries = 2,
-    timeoutMs = 120000 // 默认120秒超时，督导API需要更长时间
+    timeoutMs?: number // 默认超时时间
   ): Promise<DifyResponse> {
+    // 督导API需要更长的超时时间，因为处理大量数据
+    const actualTimeoutMs = timeoutMs || (configType === 'supervisor' ? 180000 : 120000); // 督导3分钟，其他2分钟
     // 每次调用时动态获取最新配置
     const config = getApiConfig()[configType];
 
@@ -164,7 +166,7 @@ export class DifyApiService {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        const timeoutId = setTimeout(() => controller.abort(), actualTimeoutMs);
 
         console.log(`API调用 (尝试 ${attempt + 1}/${retries + 1}):`, { apiUrl: config.url, message: message.substring(0, 50) + '...' });
 
@@ -203,7 +205,7 @@ export class DifyApiService {
         }
 
         // 等待一下再重试，督导API需要更长的等待时间
-        await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
+        await new Promise(resolve => setTimeout(resolve, 3000 * (attempt + 1))); // 增加到3秒递增
       }
     }
 
