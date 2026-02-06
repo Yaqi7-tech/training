@@ -443,59 +443,38 @@ export class DifyApiService {
         if (firstJson.reply) {
           if (typeof firstJson.reply === 'string' && firstJson.reply.includes('{')) {
             try {
-              console.log('尝试解析reply字段:', firstJson.reply);
+              console.log('reply字段包含JSON，尝试解析:', firstJson.reply.substring(0, 100));
 
-              // 先尝试直接使用reply，如果包含嵌套JSON则提取
-              if (firstJson.reply && typeof firstJson.reply === 'string') {
-                // 尝试提取 markdown 代码块中的内容
-                const jsonBlockMatch = firstJson.reply.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-                if (jsonBlockMatch) {
-                  let contentToParse = jsonBlockMatch[1].trim();
-                  console.log('提取到代码块:', contentToParse);
-
-                  // 从内容中提取第一个完整的JSON对象
-                  const extractedJson = this.extractFirstJson(contentToParse);
-                  if (extractedJson) {
-                    console.log('提取到的JSON:', extractedJson);
-                    // 尝试直接解析，失败再清理
-                    try {
-                      const replyJson = JSON.parse(extractedJson) as NewApiResponse;
-                      if (replyJson.reply) {
-                        visitorText = replyJson.reply;
-                      }
-                      if (replyJson.open_stage) {
-                        const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
-                        if (levelMatch) {
-                          const levelValue = parseInt(levelMatch[1], 10);
-                          if (levelValue >= 1 && levelValue <= 4) {
-                            opennessLevel = levelValue;
-                          }
-                        }
-                      }
-                    } catch {
-                      const cleaned = cleanJsonString(extractedJson);
-                      const replyJson = JSON.parse(cleaned) as NewApiResponse;
-                      if (replyJson.reply) {
-                        visitorText = replyJson.reply;
-                      }
-                      if (replyJson.open_stage) {
-                        const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
-                        if (levelMatch) {
-                          const levelValue = parseInt(levelMatch[1], 10);
-                          if (levelValue >= 1 && levelValue <= 4) {
-                            opennessLevel = levelValue;
-                          }
-                        }
+              // reply字段本身是JSON字符串，直接解析
+              const extractedJson = this.extractFirstJson(firstJson.reply);
+              if (extractedJson) {
+                console.log('提取到的JSON:', extractedJson);
+                try {
+                  const replyJson = JSON.parse(extractedJson) as NewApiResponse;
+                  if (replyJson.reply && typeof replyJson.reply === 'string') {
+                    visitorText = replyJson.reply;
+                    console.log('解析到visitorText:', visitorText);
+                  }
+                  if (replyJson.open_stage) {
+                    const levelMatch = replyJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
+                    if (levelMatch) {
+                      const levelValue = parseInt(levelMatch[1], 10);
+                      if (levelValue >= 1 && levelValue <= 4) {
+                        opennessLevel = levelValue;
+                        console.log('设置opennessLevel为:', opennessLevel);
                       }
                     }
                   }
-                } else {
-                  // 没有代码块，直接使用reply
+                } catch (parseError) {
+                  console.log('解析JSON失败，使用原始reply:', parseError);
                   visitorText = firstJson.reply;
                 }
+              } else {
+                // 没有提取到独立JSON，使用原始reply
+                visitorText = firstJson.reply;
               }
             } catch (e) {
-              console.error('reply字段JSON解析失败，使用原始reply:', e);
+              console.error('reply字段解析失败，使用原始reply:', e);
               visitorText = firstJson.reply;
             }
           } else {
