@@ -134,10 +134,16 @@ export class DifyApiService {
   private supervisorConversationId: string | null = null;
   private fullSupervisorRecords: FullSupervisorRecord[] = [];  // 存储完整督导记录
   private currentTurnNumber: number = 0;  // 跟踪当前轮次
+  private fullSupervisorHistory: string = '';  // 存储督导API输出的完整历史记录
 
   // 获取所有完整督导记录（用于最后的综合评价）
   getFullSupervisorRecords(): FullSupervisorRecord[] {
     return this.fullSupervisorRecords;
+  }
+
+  // 获取完整督导历史记录（用于综合评价API）
+  getFullSupervisorHistory(): string {
+    return this.fullSupervisorHistory;
   }
 
   // 设置当前轮次（在调用督导API前调用）
@@ -516,6 +522,18 @@ export class DifyApiService {
       console.log('提取到', jsonObjects.length, '个JSON对象');
 
       for (const obj of jsonObjects) {
+        // 0. 提取完整督导历史记录（用于综合评价API）
+        // 查找可能包含完整历史记录的字段
+        const historyKeys = ['full_history', '全部历史记录', 'all_history', 'history', '督导历史'];
+        for (const key of historyKeys) {
+          if (obj[key] !== undefined) {
+            this.fullSupervisorHistory = obj[key];
+            console.log('提取到完整督导历史记录，长度:', this.fullSupervisorHistory.length);
+            console.log('完整历史记录前200字符:', this.fullSupervisorHistory.substring(0, 200));
+            break;
+          }
+        }
+
         // 1. 处理完整督导记录 (memory_update)
         if (obj.memory_update) {
           const extractedJson = this.extractJsonFromMarkdown(obj.memory_update);
@@ -777,13 +795,18 @@ export class DifyApiService {
       return null;
     }
 
-    console.log('准备调用综合评价API，督导记录数量:', this.fullSupervisorRecords.length);
-    console.log('督导记录:', this.fullSupervisorRecords);
+    console.log('准备调用综合评价API');
+    console.log('完整督导历史记录长度:', this.fullSupervisorHistory.length);
 
-    // 构建督导记录摘要
-    const recordsSummary = this.fullSupervisorRecords.map(record => {
+    // 使用督导API输出的完整历史记录
+    const recordsSummary = this.fullSupervisorHistory || this.fullSupervisorRecords.map(record => {
       return `第${record.轮次}轮：${record.natural_language_feedback}`;
     }).join('\n\n');
+
+    if (!recordsSummary) {
+      console.warn('没有督导历史记录，跳过综合评价');
+      return null;
+    }
 
     // 构建胜任力维度数据
     const competencySummary = JSON.stringify(competencyScores, null, 2);
@@ -835,6 +858,7 @@ ${competencySummary}
     this.visitorConversationId = null;
     this.supervisorConversationId = null;
     this.fullSupervisorRecords = [];  // 清空完整督导记录
+    this.fullSupervisorHistory = '';  // 清空完整督导历史记录
     this.currentTurnNumber = 0;  // 重置轮次计数
   }
 }
