@@ -773,9 +773,12 @@ export class DifyApiService {
     // 检查是否有综合评价API的key
     const config = getApiConfig().overall;
     if (!config.key) {
-      console.warn('未配置综合评价API key');
+      console.warn('未配置综合评价API key，跳过综合评价');
       return null;
     }
+
+    console.log('准备调用综合评价API，督导记录数量:', this.fullSupervisorRecords.length);
+    console.log('督导记录:', this.fullSupervisorRecords);
 
     // 构建督导记录摘要
     const recordsSummary = this.fullSupervisorRecords.map(record => {
@@ -796,7 +799,8 @@ ${competencySummary}
 请根据以上信息给出综合评价。`;
 
     try {
-      const response = await this.callDifyAPI('overall', prompt, null, 1);
+      // 综合评价API需要更长的超时时间和重试次数
+      const response = await this.callDifyAPI('overall', prompt, null, 2, 300000);
 
       let answer = response.answer.trim();
       console.log('综合评价原始响应:', answer);
