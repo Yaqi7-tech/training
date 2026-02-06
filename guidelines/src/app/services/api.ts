@@ -387,19 +387,31 @@ export class DifyApiService {
 
     console.log('找到的JSON对象数量:', jsonObjects.length);
 
+    // 清理JSON字符串中的控制字符（防止解析错误）
+    const cleanJsonString = (jsonStr: string): string => {
+      // 将未转义的控制字符替换为转义形式
+      return jsonStr
+        .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '') // 移除控制字符
+        .replace(/\n/g, '\\n')  // 将真正的换行符转义
+        .replace(/\r/g, '\\r')  // 将真正的回车符转义
+        .replace(/\t/g, '\\t'); // 将真正的制表符转义
+    };
+
     if (jsonObjects.length >= 2) {
       try {
-        const firstJson = JSON.parse(jsonObjects[0]) as NewApiResponse;
-        const secondJson = JSON.parse(jsonObjects[1]) as ChartData;
+        // 清理JSON字符串后再解析
+        const firstJson = JSON.parse(cleanJsonString(jsonObjects[0])) as NewApiResponse;
+        const secondJson = JSON.parse(cleanJsonString(jsonObjects[1])) as ChartData;
 
         if (firstJson.reply) {
           if (typeof firstJson.reply === 'string' && firstJson.reply.includes('{')) {
             try {
               console.log('尝试解析reply字段:', firstJson.reply);
 
-              // 先处理转义字符
-              let processedReply = firstJson.reply
-                .replace(/\\n/g, '\n')
+              // 先清理控制字符，保持转义形式
+              let processedReply = cleanJsonString(firstJson.reply);
+              // 然后处理转义的引号
+              processedReply = processedReply
                 .replace(/\\"/g, '"');
 
               console.log('处理后的reply:', processedReply);
@@ -408,6 +420,9 @@ export class DifyApiService {
               const jsonBlockMatch = processedReply.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
               let contentToParse = jsonBlockMatch ? jsonBlockMatch[1].trim() : processedReply;
 
+              // 再次清理可能的控制字符
+              contentToParse = cleanJsonString(contentToParse);
+
               console.log('准备解析的内容:', contentToParse);
 
               // 从内容中提取第一个完整的JSON对象
@@ -415,7 +430,8 @@ export class DifyApiService {
 
               if (extractedJson) {
                 console.log('提取到的JSON:', extractedJson);
-                const replyJson = JSON.parse(extractedJson) as NewApiResponse;
+                // 清理后再解析
+                const replyJson = JSON.parse(cleanJsonString(extractedJson)) as NewApiResponse;
 
                 if (replyJson.reply) {
                   visitorText = replyJson.reply;
