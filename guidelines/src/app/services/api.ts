@@ -389,12 +389,14 @@ export class DifyApiService {
 
     // 清理JSON字符串中的控制字符（防止解析错误）
     const cleanJsonString = (jsonStr: string): string => {
-      // 将未转义的控制字符替换为转义形式
+      // 只移除未转义的控制字符，保留已经正确转义的字符
+      // 匹配：不在反斜杠后的控制字符
       return jsonStr
-        .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '') // 移除控制字符
-        .replace(/\n/g, '\\n')  // 将真正的换行符转义
-        .replace(/\r/g, '\\r')  // 将真正的回车符转义
-        .replace(/\t/g, '\\t'); // 将真正的制表符转义
+        .replace(/(?<!\\)\n/g, '\\n')   // 只转义未转义的换行符
+        .replace(/(?<!\\)\r/g, '\\r')   // 只转义未转义的回车符
+        .replace(/(?<!\\)\t/g, '\\t')   // 只转义未转义的制表符
+        // 移除其他不可见控制字符（排除常见的空白字符）
+        .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '');
     };
 
     if (jsonObjects.length >= 2) {
@@ -410,9 +412,6 @@ export class DifyApiService {
 
               // 先清理控制字符，保持转义形式
               let processedReply = cleanJsonString(firstJson.reply);
-              // 然后处理转义的引号
-              processedReply = processedReply
-                .replace(/\\"/g, '"');
 
               console.log('处理后的reply:', processedReply);
 
@@ -463,13 +462,19 @@ export class DifyApiService {
 
           if (firstJson.open_stage && !opennessLevel) {
             const levelMatch = firstJson.open_stage.match(/\bLevel\s+(\d+)\b/i);
+            console.log('open_stage解析:', firstJson.open_stage, '匹配结果:', levelMatch);
             if (levelMatch) {
               const levelValue = parseInt(levelMatch[1], 10);
+              console.log('解析到的Level值:', levelValue);
               if (levelValue >= 1 && levelValue <= 4) {
                 opennessLevel = levelValue;
+                console.log('设置opennessLevel为:', opennessLevel);
               }
             }
           }
+        }
+
+        console.log('最终opennessLevel:', opennessLevel);
         }
 
         if (secondJson.conversation_stage_curve || secondJson.session_emotion_timeline || secondJson.stress_curve || secondJson.emotion_curve) {
