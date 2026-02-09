@@ -120,15 +120,15 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.bg }}>
         <div className="bg-white rounded-xl p-12 text-center max-w-md shadow-sm border border-slate-200">
-          <AlertCircle className="w-16 h-16 mx-auto mb-4 text-amber-500" />
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">数据库未配置</h2>
-          <p className="text-slate-500 mb-6">进步分析功能需要配置数据库才能使用。请联系管理员配置 Supabase。</p>
+          <AlertCircle className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">暂无历史记录</h2>
+          <p className="text-slate-500 mb-6">完成练习后，这里将显示您的进步分析和历史数据。</p>
           <Button
             onClick={onBack}
             className="text-white hover:opacity-90"
             style={{ backgroundColor: colors.primary }}
           >
-            返回场景选择
+            开始练习
           </Button>
         </div>
       </div>

@@ -9,4 +9,4 @@ build
 .idea
 *.swp
 *.swo
-*~
+*~.claude/

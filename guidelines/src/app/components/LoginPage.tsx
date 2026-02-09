@@ -14,17 +14,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setIsLoading(true);
 
     try {
       // 检查 Supabase 是否已配置
       if (!supabase) {
-        setError('系统未配置数据库，请联系管理员');
+        setError('系统未配置数据库，请联系技术支持');
         setIsLoading(false);
         return;
       }
@@ -38,17 +40,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         });
 
         if (signUpError) {
-          // 如果用户已存在，提示直接登录
-          if (signUpError.message.includes('already registered') || signUpError.message.includes('User already registered')) {
-            setError('该邮箱已注册，请切换到登录模式');
-          } else {
-            throw signUpError;
-          }
+          throw signUpError;
         } else {
-          // 注册成功，自动登录
-          if (data.user) {
-            onLogin(data.user.id);
-          }
+          // 注册成功，显示成功提示并切换到登录模式
+          setSuccessMessage('注册成功！请登录您的账号。');
+          setIsRegisterMode(false);
+          setPassword(''); // 清空密码
         }
       } else {
         // 登录
@@ -65,7 +62,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       }
     } catch (err) {
       console.error('登录错误:', err);
-      setError(err instanceof Error ? err.message : '登录失败，请重试');
+      const errorMessage = err instanceof Error ? err.message : '操作失败，请重试';
+
+      // 友好的错误提示
+      if (errorMessage.includes('Invalid login credentials')) {
+        setError('邮箱或密码错误，请检查后重试');
+      } else if (errorMessage.includes('User already registered')) {
+        setError('该邮箱已注册，请切换到登录模式');
+      } else if (errorMessage.includes('Email not confirmed')) {
+        setError('请先验证您的邮箱');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -93,6 +101,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
           </div>
+
+          {/* 提示信息 - 只在未配置 Supabase 时显示 */}
+          {!supabase && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-red-800">
+                  <p className="font-semibold mb-1">系统未配置数据库</p>
+                  <p className="text-red-700">请联系技术支持配置 Supabase 数据库。</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -124,6 +145,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               />
             </div>
 
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-600">{successMessage}</p>
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-600">{error}</p>
@@ -153,10 +180,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               onClick={() => {
                 setIsRegisterMode(!isRegisterMode);
                 setError('');
+                setSuccessMessage('');
               }}
               className="text-sm text-slate-500 hover:text-slate-700"
             >
-              {isRegisterMode ? '已有账号？去登录' : '没有账号？自动注册'}
+              {isRegisterMode ? '已有账号？去登录' : '没有账号？去注册'}
             </button>
           </div>
         </div>
