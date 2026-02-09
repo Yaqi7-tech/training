@@ -92,16 +92,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </p>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">使用真实账号登录</p>
-                <p className="text-blue-700">请使用您的真实邮箱注册或登录。您的练习记录将保存在数据库中，方便查看进步分析。</p>
-              </div>
-            </div>
-          </div>
-
           {/* 提示信息 - 只在未配置 Supabase 时显示 */}
           {!supabase && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
