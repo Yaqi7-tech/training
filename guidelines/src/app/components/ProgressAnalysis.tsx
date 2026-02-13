@@ -249,33 +249,27 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                   </h2>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="70%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[getRadarData(firstSession), getRadarData(latestSession)]}>
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
                         <Legend />
-                        {firstSession && (
-                          <Radar
-                            name="首次"
-                            dataKey="value"
-                            data={getRadarData(firstSession)}
-                            stroke="#94a3b8"
-                            fill="#94a3b8"
-                            fillOpacity={0.2}
-                            strokeWidth={1}
-                          />
-                        )}
-                        {latestSession && (
-                          <Radar
-                            name="最新"
-                            dataKey="value"
-                            data={getRadarData(latestSession)}
-                            stroke={colors.dark}
-                            fill={colors.primary}
-                            fillOpacity={0.4}
-                            strokeWidth={2}
-                          />
-                        )}
+                        <Radar
+                          name="首次"
+                          dataKey="value"
+                          stroke="#94a3b8"
+                          fill="#94a3b8"
+                          fillOpacity={0.2}
+                          strokeWidth={1}
+                        />
+                        <Radar
+                          name="最新"
+                          dataKey="value"
+                          stroke={colors.dark}
+                          fill={colors.primary}
+                          fillOpacity={0.4}
+                          strokeWidth={2}
+                        />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
@@ -288,37 +282,35 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                   </h2>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="70%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
+                        competencyDimensions.map(dim => ({
+                          dimension: dim.label,
+                          value: sessions.reduce((sum, s) =>
+                            sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0
+                          ) / sessions.length
+                        })),
+                        getRadarData(latestSession)
+                      ]}>
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
                         <Legend />
-                        {/* 计算平均胜任力 */}
                         <Radar
                           name="平均"
                           dataKey="value"
-                          data={competencyDimensions.map(dim => ({
-                            dimension: dim.label,
-                            value: sessions.reduce((sum, s) =>
-                              sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0
-                            ) / sessions.length
-                          }))}
                           stroke="#94a3b8"
                           fill="#94a3b8"
                           fillOpacity={0.2}
                           strokeWidth={1}
                         />
-                        {latestSession && (
-                          <Radar
-                            name="最新"
-                            dataKey="value"
-                            data={getRadarData(latestSession)}
-                            stroke={colors.dark}
-                            fill={colors.primary}
-                            fillOpacity={0.4}
-                            strokeWidth={2}
-                          />
-                        )}
+                        <Radar
+                          name="最新"
+                          dataKey="value"
+                          stroke={colors.dark}
+                          fill={colors.primary}
+                          fillOpacity={0.4}
+                          strokeWidth={2}
+                        />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
