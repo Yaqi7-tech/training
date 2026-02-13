@@ -738,8 +738,7 @@ export function EvaluationReport({
           </div>
         </div>
 
-        {/* 胜任力评估说明 */}
-        {/* Based on APA six competency dimensions. 0 indicates this dimension was not triggered in this conversation, showing ability gaps. */}
+        {/* Competency explanation */}
           <Button
             onClick={onStartNew}
             style={{ backgroundColor: colors.primary }}
