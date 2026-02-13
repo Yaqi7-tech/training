@@ -739,7 +739,7 @@ export function EvaluationReport({
         </div>
 
         {/* 胜任力评估说明 */}
-        {/* 基于 APA 六大胜任力维度。0 表示本次对话未触发该维度场景，显示能力短板。 */}
+        {/* Based on APA six competency dimensions. 0 indicates this dimension was not triggered in this conversation, showing ability gaps. */}
           <Button
             onClick={onStartNew}
             style={{ backgroundColor: colors.primary }}
