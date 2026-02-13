@@ -228,6 +228,10 @@ export function ChatInterface({ scenario, onBack, onFinish }: ChatInterfaceProps
 
       // 处理来访者API响应
       if (visitorResponse.status === 'fulfilled') {
+        console.log('来访者响应类型:', typeof visitorResponse.value.text);
+        console.log('来访者响应内容长度:', visitorResponse.value.text?.length);
+        console.log('来访者响应前200字符:', visitorResponse.value.text?.substring(0, 200));
+
         const aiResponse: Message = {
           id: messages.length + 2,
           role: 'assistant',
