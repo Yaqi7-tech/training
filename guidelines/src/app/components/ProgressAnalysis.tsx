@@ -59,6 +59,9 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+      console.log('加载的练习记录:', data);
+      console.log('第一条记录的 competency_scores:', data?.[0]?.competency_scores);
+      console.log('最后一条记录的 competency_scores:', data?.[data?.length - 1]?.competency_scores);
       setSessions(data || []);
     } catch (error) {
       console.error('加载练习记录失败:', error);
@@ -76,11 +79,14 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
   };
 
   const getRadarData = (session: PracticeSession) => {
-    return competencyDimensions.map(dim => ({
+    console.log('getRadarData 调用的 session:', session.scenario_name, session.competency_scores);
+    const radarData = competencyDimensions.map(dim => ({
       dimension: dim.label,
       fullMark: 10,
       value: session.competency_scores[dim.key as keyof typeof session.competency_scores] || 0
     }));
+    console.log('getRadarData 返回的雷达图数据:', radarData);
+    return radarData;
   };
 
   const getStats = () => {
