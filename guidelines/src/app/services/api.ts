@@ -369,6 +369,12 @@ export class DifyApiService {
     let chartData: ChartData | null = null;
     let opennessLevel: number | undefined;
 
+    // 尝试从JSON中提取纯文本reply，避免显示JSON数据
+    const textReplyMatch = response.answer.match(/"reply":\s*"([^"]+)"/);
+    if (textReplyMatch && textReplyMatch[1]) {
+      visitorText = textReplyMatch[1].replace(/\\"/g, '"');
+    }
+
     let jsonObjects: string[] = [];
     let startIndex = -1;
     let braceCount = 0;
