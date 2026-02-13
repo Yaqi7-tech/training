@@ -88,6 +88,30 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
     return radarData;
   };
 
+  // 获取多系列雷达图数据（首次 vs 最新）
+  const getComparisonRadarData = () => {
+    return competencyDimensions.map(dim => ({
+      dimension: dim.label,
+      首次: firstSession?.competency_scores[dim.key as keyof typeof firstSession.competency_scores] || 0,
+      最新: latestSession?.competency_scores[dim.key as keyof typeof latestSession.competency_scores] || 0
+    }));
+  };
+
+  // 获取平均对比雷达图数据
+  const getAverageComparisonRadarData = () => {
+    // 计算平均胜任力
+    const avgScores = competencyDimensions.map(dim => ({
+      dimension: dim.label,
+      平均: sessions.reduce((sum, s) => sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0) / sessions.length
+    }));
+    // 合并最新和平均
+    return competencyDimensions.map(dim => ({
+      dimension: dim.label,
+      平均: sessions.reduce((sum, s) => sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0) / sessions.length,
+      最新: latestSession?.competency_scores[dim.key as keyof typeof latestSession.competency_scores] || 0
+    }));
+  };
+
   const getStats = () => {
     if (sessions.length === 0) {
       return { totalSessions: 0, totalTurns: 0, avgScore: 0, maxScore: 0 };
@@ -249,14 +273,14 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                   </h2>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[getRadarData(firstSession), getRadarData(latestSession)]}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={getComparisonRadarData()}>
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
                         <Legend />
                         <Radar
                           name="首次"
-                          dataKey="value"
+                          dataKey="首次"
                           stroke="#94a3b8"
                           fill="#94a3b8"
                           fillOpacity={0.2}
@@ -264,7 +288,7 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                         />
                         <Radar
                           name="最新"
-                          dataKey="value"
+                          dataKey="最新"
                           stroke={colors.dark}
                           fill={colors.primary}
                           fillOpacity={0.4}
@@ -282,22 +306,14 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                   </h2>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
-                        competencyDimensions.map(dim => ({
-                          dimension: dim.label,
-                          value: sessions.reduce((sum, s) =>
-                            sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0
-                          ) / sessions.length
-                        })),
-                        getRadarData(latestSession)
-                      ]}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={getAverageComparisonRadarData()}>
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
                         <Legend />
                         <Radar
                           name="平均"
-                          dataKey="value"
+                          dataKey="平均"
                           stroke="#94a3b8"
                           fill="#94a3b8"
                           fillOpacity={0.2}
@@ -305,7 +321,7 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                         />
                         <Radar
                           name="最新"
-                          dataKey="value"
+                          dataKey="最新"
                           stroke={colors.dark}
                           fill={colors.primary}
                           fillOpacity={0.4}
