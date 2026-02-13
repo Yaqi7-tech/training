@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MessageSquare, TrendingUp, Award, Activity, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 
 interface ProgressAnalysisProps {
   userId: string;
@@ -253,6 +253,7 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
+                        <Legend />
                         {firstSession && (
                           <Radar
                             name="首次"
@@ -291,6 +292,7 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                         <PolarGrid stroke="#e2e8f0" />
                         <PolarAngleAxis dataKey="dimension" tick={{ fill: '#64748b', fontSize: 11 }} />
                         <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 9 }} tickCount={6} />
+                        <Legend />
                         {/* 计算平均胜任力 */}
                         <Radar
                           name="平均"
