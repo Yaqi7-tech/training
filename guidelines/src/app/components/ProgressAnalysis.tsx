@@ -82,7 +82,6 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
     console.log('getRadarData 调用的 session:', session.scenario_name, session.competency_scores);
     const radarData = competencyDimensions.map(dim => ({
       dimension: dim.label,
-      fullMark: 10,
       value: session.competency_scores[dim.key as keyof typeof session.competency_scores] || 0
     }));
     console.log('getRadarData 返回的雷达图数据:', radarData);
@@ -298,7 +297,6 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
                           dataKey="value"
                           data={competencyDimensions.map(dim => ({
                             dimension: dim.label,
-                            fullMark: 10,
                             value: sessions.reduce((sum, s) =>
                               sum + (s.competency_scores[dim.key as keyof typeof s.competency_scores] || 0), 0
                             ) / sessions.length
