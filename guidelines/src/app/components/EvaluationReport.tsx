@@ -742,6 +742,9 @@ export function EvaluationReport({
         <div className="mt-4 text-xs text-slate-500 text-center">
           基于 APA 六大胜任力维度。0 表示本次对话未触发该维度场景，非能力短板。
         </div>
+
+        {/* 操作按钮 */}
+        <div className="flex gap-3 justify-center pt-6">
           <Button
             onClick={onStartNew}
             style={{ backgroundColor: colors.primary }}
