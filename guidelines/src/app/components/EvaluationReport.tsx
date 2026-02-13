@@ -740,7 +740,7 @@ export function EvaluationReport({
 
         {/* 胜任力评估说明 */}
         <div className="mt-4 text-xs text-slate-500 text-center">
-          基于 APA 六大胜任力维度。0 表示本次对话未触发该维度场景，显示能力短板。
+          {"基于 APA 六大胜任力维度。0 表示本次对话未触发该维度场景，显示能力短板。"}
         </div>
           <Button
             onClick={onStartNew}
