@@ -117,6 +117,8 @@ export function ProgressAnalysis({ userId, onBack }: ProgressAnalysisProps) {
   // 首次练习和最新练习
   const firstSession = sessions[0];
   const latestSession = sessions[sessions.length - 1];
+  console.log('firstSession:', firstSession?.scenario_name, 'latestSession:', latestSession?.scenario_name);
+  console.log('sessions.length >= 2:', sessions.length >= 2);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.bg }}>
