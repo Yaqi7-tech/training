@@ -116,7 +116,7 @@ const getApiConfig = () => {
   }
 
   const visitorKey = import.meta.env.VITE_DIFY_VISITOR_API_KEY || 'app-2HjDhAbbHNl8N4T2Rcs2C25s';
-  const supervisorKey = import.meta.env.VITE_DIFY_SUPERVISOR_API_KEY || 'app-3NPjpb7nkYhFAYtXpFvOShv6';
+  const supervisorKey = import.meta.env.VITE_DIFY_SUPERVISOR_API_KEY || 'app-2IXqaO4d2kjVDbZkNPN6vOQE';
   const overallKey = import.meta.env.VITE_DIFY_API_OVERALL_KEY || '';
 
   return {
